@@ -1,0 +1,21 @@
+---
+yum_install: []
+yum_opts:
+  allow_downgrade: false
+  conf_file: ''
+  disable_gpg_check: false
+  disablerepo: []
+  enablerepo: []
+  exclude: ''
+  installroot: /
+  security: false
+  skip_broken: false
+  update_cache: false
+  validate_certs: true
+yum_permissions: []
+yum_protected:
+  systemd:
+    - systemd
+yum_remove: []
+yum_update: false
+...

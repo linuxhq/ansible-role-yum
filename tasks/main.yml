@@ -1,0 +1,89 @@
+---
+- name: Ensure that defined packages are present
+  tags: yum
+  become: true
+  yum:
+    allow_downgrade: "{{ yum_opts.allow_downgrade|default('no') }}"
+    conf_file: "{{ yum_opts.conf_file|default(omit) }}"
+    disable_gpg_check: "{{ yum_opts.disable_gpg_check|default('no') }}"
+    disablerepo: "{{ yum_opts.disablerepo|join(',')|default(omit) }}"
+    enablerepo: "{{ yum_opts.enablerepo|join(',')|default(omit) }}"
+    exclude: "{{ yum_opts.exclude|default(omit) }}"
+    installroot: "{{ yum_opts.installroot|default('/') }}"
+    name: "{{ item }}"
+    security: "{{ yum_opts.security|default('no') }}"
+    skip_broken: "{{ yum_opts.skip_broken|default('no') }}"
+    state: present
+    update_cache: "{{ yum_opts.update_cache|default('no') }}"
+    validate_certs: "{{ yum_opts.validate_certs|default('yes') }}"
+  with_items: "{{ yum_install }}"
+  when: yum_install|length > 0
+
+- name: Ensure that defined packages are absent
+  tags: yum
+  become: true
+  yum:
+    allow_downgrade: "{{ yum_opts.allow_downgrade|default('no') }}"
+    conf_file: "{{ yum_opts.conf_file|default(omit) }}"
+    disable_gpg_check: "{{ yum_opts.disable_gpg_check|default('no') }}"
+    disablerepo: "{{ yum_opts.disablerepo|join(',')|default(omit) }}"
+    enablerepo: "{{ yum_opts.enablerepo|join(',')|default(omit) }}"
+    exclude: "{{ yum_opts.exclude|default(omit) }}"
+    installroot: "{{ yum_opts.installroot|default('/') }}"
+    name: "{{ item }}"
+    security: "{{ yum_opts.security|default('no') }}"
+    skip_broken: "{{ yum_opts.skip_broken|default('no') }}"
+    state: absent
+    update_cache: "{{ yum_opts.update_cache|default('no') }}"
+    validate_certs: "{{ yum_opts.validate_certs|default('yes') }}"
+  with_items: "{{ yum_remove }}"
+  when: yum_remove|length > 0
+
+- name: Ensure that all yum packages are latest
+  tags: yum
+  become: true
+  yum:
+    allow_downgrade: "{{ yum_opts.allow_downgrade|default('no') }}"
+    conf_file: "{{ yum_opts.conf_file|default(omit) }}"
+    disable_gpg_check: "{{ yum_opts.disable_gpg_check|default('no') }}"
+    disablerepo: "{{ yum_opts.disablerepo|join(',')|default(omit) }}"
+    enablerepo: "{{ yum_opts.enablerepo|join(',')|default(omit) }}"
+    exclude: "{{ yum_opts.exclude|default(omit) }}"
+    installroot: "{{ yum_opts.installroot|default('/') }}"
+    name: '*'
+    security: "{{ yum_opts.security|default('no') }}"
+    skip_broken: "{{ yum_opts.skip_broken|default('no') }}"
+    state: latest
+    update_cache: "{{ yum_opts.update_cache|default('no') }}"
+    validate_certs: "{{ yum_opts.validate_certs|default('yes') }}"
+  register: yum_update
+
+- name: Attempting to regather facts post yum update
+  tags: yum
+  action:
+    setup
+  when: yum_update is changed
+
+- name: Attempting to apply file and directory permissions
+  tags: yum
+  become: true
+  file:
+    path: "{{ item.path }}"
+    owner: "{{ item.owner|default(omit) }}"
+    group: "{{ item.group|default(omit) }}"
+    mode: "{{ item.mode|default(omit) }}"
+  with_items: "{{ yum_permissions }}"
+  when: item.path is defined
+
+- name: Attempting to overlay yum protected.d configurations
+  tags: yum
+  become: true
+  template:
+    src: yum-protected.d.conf.j2
+    dest: /etc/yum/protected.d/{{ item }}.conf
+    owner: root
+    group: root
+    mode: 0644
+  with_items: "{{ yum_protected }}"
+  when: yum_protected[item]|length > 0
+...
