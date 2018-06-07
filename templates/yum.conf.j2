@@ -1,0 +1,18 @@
+# {{ ansible_managed }}
+
+{% for section in yum_conf|sort %}
+[{{ section }}]
+{%   for key, value in yum_conf[section].iteritems()|sort %}
+{%     if value is sameas true %}
+{{ key }} = yes
+{%     elif value is sameas false %}
+{{ key }} = no
+{%     elif value is string or value is number %}
+{{ key }} = {{ value }}
+{%     else %}
+{{ key }} = {{ value|join(', ') }}
+{%     endif %}
+{%   endfor %}
+{%   if not loop.last %}
+
+{% endfor %}

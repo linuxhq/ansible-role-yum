@@ -14,6 +14,19 @@ None
 
 Available variables are listed below, along with default values:
 
+    yum_conf:
+      main:
+        bugtracker_url: 'http://bugs.centos.org/set_project.php?project_id=23&ref=http://bugs.centos.org/bug_report_page.php?category=yum'
+        cachedir: /var/cache/yum/$basearch/$releasever
+        debuglevel: 2
+        distroverpkg: centos-release
+        exactarch: 1
+        gpgcheck: 1
+        installonly_limit: 5
+        keepcache: 0
+        logfile: /var/log/yum.log
+        obsoletes: 1
+        plugins: 1
     yum_install: []
     yum_opts:
       allow_downgrade: false

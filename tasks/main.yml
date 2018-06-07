@@ -1,4 +1,15 @@
 ---
+- name: Attempting to overlay yum configurations
+  tags: yum
+  become: true
+  template:
+    src: yum.conf.j2
+    dest: /etc/yum.conf
+    owner: root
+    group: root
+    mode: 0644
+  register: yum_template
+
 - name: Ensure that defined packages are present
   tags: yum
   become: true
@@ -17,7 +28,9 @@
     update_cache: "{{ yum_opts.update_cache|default('no') }}"
     validate_certs: "{{ yum_opts.validate_certs|default('yes') }}"
   with_items: "{{ yum_install }}"
-  when: yum_install|length > 0
+  when:
+    - yum_template is success
+    - yum_install|length > 0
 
 - name: Ensure that defined packages are absent
   tags: yum
@@ -37,7 +50,9 @@
     update_cache: "{{ yum_opts.update_cache|default('no') }}"
     validate_certs: "{{ yum_opts.validate_certs|default('yes') }}"
   with_items: "{{ yum_remove }}"
-  when: yum_remove|length > 0
+  when:
+    - yum_template is success
+    - yum_remove|length > 0
 
 - name: Ensure that all yum packages are latest
   tags: yum
@@ -56,13 +71,16 @@
     state: latest
     update_cache: "{{ yum_opts.update_cache|default('no') }}"
     validate_certs: "{{ yum_opts.validate_certs|default('yes') }}"
-  register: yum_update
+  register: yum_latest
+  when:
+    - yum_template is success
+    - yum_update|bool
 
 - name: Attempting to regather facts post yum update
   tags: yum
   action:
     setup
-  when: yum_update is changed
+  when: yum_latest is changed
 
 - name: Attempting to apply file and directory permissions
   tags: yum
