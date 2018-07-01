@@ -1,6 +1,7 @@
 ---
 dependencies: []
 galaxy_info:
+  role_name: yum
   author: tkimball83
   description: RHEL/CentOS - Yellowdog Updater Modified
   license: GPLv3
