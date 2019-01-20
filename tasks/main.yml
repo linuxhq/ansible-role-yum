@@ -27,7 +27,7 @@
     state: present
     update_cache: "{{ yum_opts.update_cache|default('no') }}"
     validate_certs: "{{ yum_opts.validate_certs|default('yes') }}"
-  with_items: "{{ yum_install }}"
+  loop: "{{ yum_install }}"
   when:
     - yum_template is success
     - yum_install|length > 0
@@ -49,7 +49,7 @@
     state: absent
     update_cache: "{{ yum_opts.update_cache|default('no') }}"
     validate_certs: "{{ yum_opts.validate_certs|default('yes') }}"
-  with_items: "{{ yum_remove }}"
+  loop: "{{ yum_remove }}"
   when:
     - yum_template is success
     - yum_remove|length > 0
@@ -90,7 +90,7 @@
     owner: "{{ item.owner|default(omit) }}"
     group: "{{ item.group|default(omit) }}"
     mode: "{{ item.mode|default(omit) }}"
-  with_items: "{{ yum_permissions }}"
+  loop: "{{ yum_permissions }}"
   when: item.path is defined
 
 - name: Attempting to overlay yum protected.d configurations
@@ -102,6 +102,6 @@
     owner: root
     group: root
     mode: 0644
-  with_items: "{{ yum_protected }}"
+  loop: "{{ yum_protected|list }}"
   when: yum_protected[item]|length > 0
 ...
