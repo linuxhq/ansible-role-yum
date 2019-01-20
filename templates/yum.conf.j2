@@ -2,7 +2,7 @@
 
 {% for section in yum_conf|sort %}
 [{{ section }}]
-{%   for key, value in yum_conf[section].iteritems()|sort %}
+{%   for key, value in yum_conf[section].items()|sort %}
 {%     if value is sameas true %}
 {{ key }} = yes
 {%     elif value is sameas false %}
